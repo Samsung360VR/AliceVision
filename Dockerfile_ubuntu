@@ -22,7 +22,6 @@ RUN apt-get clean && \
     apt-get update
 RUN apt-get install -y --no-install-recommends \
         build-essential \
-        cmake \
         git \
         wget \
         unzip \
@@ -33,6 +32,10 @@ RUN apt-get install -y --no-install-recommends \
         automake \
         gfortran
 
+RUN apt-get install -y librhash-dev zlib1g-dev libcurl4-openssl-dev \
+  libexpat-dev libjsoncpp-dev libuv1-dev libzstd-dev libbz2-dev liblzma-dev \
+  libarchive-dev
+
 # rm -rf /var/lib/apt/lists/*
 
 ENV AV_DEV=/opt/AliceVision_git \
@@ -40,9 +43,6 @@ ENV AV_DEV=/opt/AliceVision_git \
     AV_INSTALL=/opt/AliceVision_install \
     AV_BUNDLE=/opt/AliceVision_bundle \
     PATH="${PATH}:${AV_BUNDLE}"
-
-COPY . "${AV_DEV}"
-
 
 # Cannot get rig of this error on lapack build on Ubuntu, so use system libraries for lapack/suitesparse:
 #CMake Error at BLAS/SRC/cmake_install.cmake:53 (file):
@@ -54,10 +54,22 @@ COPY . "${AV_DEV}"
 RUN apt-get  install -y --no-install-recommends liblapack-dev libsuitesparse-dev
 
 WORKDIR "${AV_BUILD}"
+
+RUN wget http://www.cmake.org/files/v3.15/cmake-3.15.2.tar.gz && \
+  gunzip cmake-3.15.2.tar.gz && \
+  tar xf cmake-3.15.2.tar
+
+RUN  cd cmake-3.15.2 && \
+  ./bootstrap --system-libs --no-system-libarchive && \
+  make install
+
+COPY . "${AV_DEV}"
+WORKDIR "${AV_BUILD}"
+
 RUN cmake "${AV_DEV}" -DCMAKE_BUILD_TYPE=Release -DALICEVISION_BUILD_DEPENDENCIES:BOOL=ON -DAV_BUILD_LAPACK:BOOL=OFF -DAV_BUILD_SUITESPARSE:BOOL=OFF -DCMAKE_INSTALL_PREFIX="${AV_INSTALL}" -DALICEVISION_BUNDLE_PREFIX="${AV_BUNDLE}"
 
 WORKDIR "${AV_BUILD}"
-RUN make -j${NPROC} install && make bundle
+RUN make install && make bundle
 # && cd /opt && rm -rf "${AV_BUILD}"
 
 WORKDIR "${AV_BUNDLE}/share/aliceVision"

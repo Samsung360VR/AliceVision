@@ -458,6 +458,7 @@ ExternalProject_Add(opencv_contrib
   BUILD_COMMAND ""
   INSTALL_COMMAND ""
 )
+set(OPENCV_SRC_PATH ${CMAKE_CURRENT_BINARY_DIR}/opencv)
 ExternalProject_Add(${OPENCV_TARGET}
   DEPENDS opencv_contrib ${TBB_TARGET} ${ZLIB_TARGET}
   URL https://github.com/opencv/opencv/archive/4.1.0.zip
@@ -489,7 +490,7 @@ ExternalProject_Add(${OPENCV_TARGET}
     -DWITH_OPENCL=OFF
     -DBUILD_TESTS=OFF
     -DBUILD_LIST=core,improc,photo,objdetect,video,imgcodecs,videoio,features2d,xfeatures2d,version
-    ../${OPENCV_SRC_PATH}
+    ${OPENCV_SRC_PATH}
 )
 # set(OPENCV_CMAKE_FLAGS -DOpenCV_DIR=${BUILD_DIR}/opencv_install -DCMAKE_PREFIX_PATH=${BUILD_DIR}/opencv_install)
 set(OPENCV_CMAKE_FLAGS -DOpenCV_DIR=${BUILD_DIR}/opencv_install/${CMAKE_INSTALL_LIBDIR}/cmake/opencv4 -DOPENCV_DIR=${BUILD_DIR}/opencv_install/${CMAKE_INSTALL_LIBDIR}/cmake/opencv4)
