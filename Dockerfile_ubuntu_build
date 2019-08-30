@@ -75,6 +75,3 @@ RUN make install && make bundle
 
 WORKDIR "${AV_BUNDLE}/share/aliceVision"
 RUN wget https://gitlab.com/alicevision/trainedVocabularyTreeData/raw/master/vlfeat_K80L3.SIFT.tree
-ENV LD_LIBRARY_PATH="/opt/AliceVision_install/lib:${LD_LIBRARY_PATH}"
-ENV PATH="/opt/AliceVision_install/bin:${PATH}"
-RUN echo "Fujinon;Fujinon 12.5mm 2/3inch C mount Lens;12.5" >> /opt/AliceVision_bundle/share/aliceVision/cameraSensors.db

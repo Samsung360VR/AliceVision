@@ -74,4 +74,4 @@ RUN make install && make bundle
 
 WORKDIR "${AV_BUNDLE}/share/aliceVision"
 RUN wget https://gitlab.com/alicevision/trainedVocabularyTreeData/raw/master/vlfeat_K80L3.SIFT.tree
-
+ENV LD_LIBRARY_PATH="/opt/Alice/bin:${PATH}"
