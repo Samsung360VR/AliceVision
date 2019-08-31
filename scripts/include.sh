@@ -1,10 +1,13 @@
-function addCameraMeta {
+addCameraMeta()
+{
   camId=-1
-  captureId=${1}
-  frameId=${2}
+  nasDataDir=${1}
+  baseFramesDir=${2}
+  captureId=${3}
+  frameId=${4}
   imageType=jpeg
-  imagesFolder=/ext/frames/${captureId}/genUsable/usable/frame${frameId}
-  ordersFile=/ext/nas-nfs-mount/data/${captureId}/order.txt
+  imagesFolder=${baseFramesDir}/${captureId}/genUsable/usable/frame${frameId}
+  ordersFile=${nasDataDir}/${captureId}/order.txt
   for serial in `cat ${ordersFile}`; do
     camId=$(expr 1 + ${camId})
     echo "Processing ${camId} - ${serial}"

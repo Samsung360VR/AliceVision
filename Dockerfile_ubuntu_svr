@@ -3,7 +3,7 @@ RUN apt-get update -y && \
   apt-get dist-upgrade -y && \
   apt-get install -y exiftool vim
 COPY scripts /scripts
-
+RUN chmod +x /scripts/genPoseSFM.sh
 ENV LD_LIBRARY_PATH="/opt/AliceVision_install/lib:${LD_LIBRARY_PATH}"
 ENV PATH="/opt/AliceVision_install/bin:${PATH}"
 ENV MAKE="Fujinon"

@@ -1,14 +1,14 @@
-captureId=5d5b1323p-Cowboys5
-imageFilesBasePath=${HOME}/Work/Git/lens54/output
+captureId=5d5a1f73-Cowboys3--AV
+imageFilesBasePath=${HOME}/AliceVision/Frames
 outputBasePath=`pwd`/output
+dockerBin=docker
 mkdir -p ${outputBasePath}
 echo ${imageFilesBasePath} 
 echo ${outputBasePath} 
-sudo nvidia-docker run \
-  -it --rm \
-  -v ${HOME}/Mnt/Bkp/data:/ext/nas-nfs-mount/data \
-  -v ${imageFilesBasePath}:/ext/frames \
+sudo ${dockerBin} run -d --rm \
+  -v ${HOME}/Mnt/Bkp/data:/ext/input/nas-mount/data \
+  -v ${imageFilesBasePath}:/ext/input/frames \
   -v ${outputBasePath}:/ext/output \
   -e CAPTURE_ID="${captureId}" \
   alicevision_svr:latest \
-  /bin/bash
+  "/scripts/genPoseSFM.sh"
