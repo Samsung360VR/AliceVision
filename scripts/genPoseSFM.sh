@@ -6,7 +6,7 @@ scriptDir=$(dirname "$fullPath")
 . ${scriptDir}/include.sh
 captureId=${CAPTURE_ID}
 startFrame=1
-endFrame=450
+endFrame=300
 nasDataDir=/ext/input/nas-mount/data
 framesDir=/ext/input/frames
 outputBaseDir=/ext/output/alice/${captureId}
@@ -14,6 +14,7 @@ sensorsDb=/opt/AliceVision_bundle/share/aliceVision/cameraSensors.db
 currentFrame=${startFrame}
 cpuOnly=1
 describerTypes=sift,akaze
+describerTypes=sift
 while test ${currentFrame} -le ${endFrame}; do
   echo ${currentFrame}
   addCameraMeta "${nasDataDir}" "${framesDir}" "${captureId}" "${currentFrame}"
@@ -31,8 +32,8 @@ while test ${currentFrame} -le ${endFrame}; do
     --input=${initSfmPath} \
     --output=${featuresPath} \
     --forceCpuExtraction=${cpuOnly} \
-    --describerTypes=${describerTypes} \
-    --describerPreset=high
+    --describerTypes=${describerTypes}
+#    --describerPreset=high
   matchesPath=${frameOutputDir}/matches
   mkdir -p ${matchesPath}
   aliceVision_featureMatching \
@@ -41,9 +42,11 @@ while test ${currentFrame} -le ${endFrame}; do
     --featuresFolder=${featuresPath} \
     --describerTypes=${describerTypes} \
     --guidedMatching=1
+  viewsAndPosesSfmPath=${frameOutputDir}/views-poses.sfm
   aliceVision_incrementalSfM \
     --input=${initSfmPath} \
     --output=${incrementalSfmPath} \
+    --outputViewsAndPoses=${viewsAndPosesSfmPath} \
     --featuresFolder=${featuresPath} \
     --describerTypes=${describerTypes} \
     --matchesFolder=${matchesPath}
