@@ -13,4 +13,4 @@ sudo ${dockerBin} run --name alicevision_svr -d --rm \
   -v ${outputBasePath}:/ext/output \
   -e CAPTURE_ID="${captureId}" \
   alicevision_svr:latest \
-  "/scripts/genPoseSFM.sh"
+  "/usr/src/app/scripts/genPoseSFM.sh"

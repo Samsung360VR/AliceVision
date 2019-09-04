@@ -45,6 +45,11 @@ def extract(oTgtSfm, srcSfm):
 
   return oTgtSfm
 
+def isComplete(oTgtSfm, numPoses):
+  if (numPoses is None):
+    numPoses = len(oTgtSfm["views"].values())
+  return numPoses == len(oTgtSfm["poses"].values())
+
 def save(tgtSfm, oTgtSfm):
   if (tgtSfm is None):
     tgtSfm = "/dev/tty"
@@ -65,6 +70,7 @@ parser = argparse.ArgumentParser(description="Merge intrinsics, poses and views 
 parser.add_argument('--srcSfms', type=str, nargs='+', help="One or more source SFMs")
 parser.add_argument('--srcSfmList', type=str, help="Text file containing paths to SFM files")
 parser.add_argument("--tgtSfm", type=str, help="Target SFM file")
+parser.add_argument("--numPoses", type=int, help="Expected number of poses in SFM")
 args = parser.parse_args()
 
 oTgtSfm = None
@@ -79,10 +85,15 @@ if (args.srcSfmList is not None):
     with open(args.srcSfmList, 'r') as fSfmList:
       for line in fSfmList:
         oTgtSfm = extract(oTgtSfm, line.strip())
+        if (isComplete(oTgtSfm, args.numPoses)):
+          break;
   except:
       pass
 elif (args.srcSfms is not None):
   for srcSfm in args.srcSfms:
     oTgtSfm = extract(oTgtSfm, srcSfm)
+    if (isComplete(oTgtSfm, args.numPoses)):
+      break;
 
-save(args.tgtSfm, oTgtSfm)
+if oTgtSfm is not None:
+  save(args.tgtSfm, oTgtSfm)
