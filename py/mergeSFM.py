@@ -16,32 +16,37 @@ def map1(oTgtSfm, key, read):
 
 def extract(oTgtSfm, srcSfm):
   print("Processing %s" % (srcSfm))
-  with open(srcSfm, 'r') as fSrcSfm:
-    oSrcSfm = json.load(fSrcSfm)
+  try:
+    with open(srcSfm, 'r') as fSrcSfm:
+      oSrcSfm = json.load(fSrcSfm)
+  except:
+    oSrcSfm = None
   if (oTgtSfm is None):
     oTgtSfm = dict()
 
-  myViews = dict()
-  for view in oSrcSfm["views"]:
-    metadata = view["metadata"]
-    bodySerial = metadata["Exif:BodySerialNumber"]
-    lensSerial = metadata["Exif:LensSerialNumber"]
-    key = bodySerial + lensSerial
-    myViews[key] = view
+  if (oSrcSfm is not None):
 
-  myIntrinsics = dict()
-  for intrinsic in oSrcSfm["intrinsics"]:
-    key = intrinsic["serialNumber"]
-    myIntrinsics[key] = intrinsic
+    myViews = dict()
+    for view in oSrcSfm["views"]:
+      metadata = view["metadata"]
+      bodySerial = metadata["Exif:BodySerialNumber"]
+      lensSerial = metadata["Exif:LensSerialNumber"]
+      key = bodySerial + lensSerial
+      myViews[key] = view
 
-  myPoses = dict()
-  for pose in oSrcSfm["poses"]:
-    key = pose["poseId"]
-    myPoses[key] = pose
+    myIntrinsics = dict()
+    for intrinsic in oSrcSfm["intrinsics"]:
+      key = intrinsic["serialNumber"]
+      myIntrinsics[key] = intrinsic
 
-  oTgtSfm = map1(oTgtSfm, "views", myViews)
-  oTgtSfm = map1(oTgtSfm, "intrinsics", myIntrinsics)
-  oTgtSfm = map1(oTgtSfm, "poses", myPoses)
+    myPoses = dict()
+    for pose in oSrcSfm["poses"]:
+      key = pose["poseId"]
+      myPoses[key] = pose
+
+    oTgtSfm = map1(oTgtSfm, "views", myViews)
+    oTgtSfm = map1(oTgtSfm, "intrinsics", myIntrinsics)
+    oTgtSfm = map1(oTgtSfm, "poses", myPoses)
 
   return oTgtSfm
 
@@ -79,13 +84,16 @@ try:
     oTgtSfm = json.load(fTgtSfm)
 except:
   oTgtSfm = None
-  
+
+returnCode = 1  
+
 if (args.srcSfmList is not None):
   try:
     with open(args.srcSfmList, 'r') as fSfmList:
       for line in fSfmList:
         oTgtSfm = extract(oTgtSfm, line.strip())
         if (isComplete(oTgtSfm, args.numPoses)):
+          returnCode = 0
           break;
   except:
       pass
@@ -93,7 +101,9 @@ elif (args.srcSfms is not None):
   for srcSfm in args.srcSfms:
     oTgtSfm = extract(oTgtSfm, srcSfm)
     if (isComplete(oTgtSfm, args.numPoses)):
+      returnCode = 0
       break;
 
 if oTgtSfm is not None:
   save(args.tgtSfm, oTgtSfm)
+return returnCode  

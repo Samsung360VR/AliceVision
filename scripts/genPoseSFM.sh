@@ -12,9 +12,11 @@ framesDir=/ext/input/frames
 outputBaseDir=/ext/output/alice/${captureId}
 sensorsDb=/opt/AliceVision_bundle/share/aliceVision/cameraSensors.db 
 currentFrame=${startFrame}
-cpuOnly=1
+cpuOnly=0
+numPoses=72
 describerTypes=sift,akaze
 describerTypes=sift
+mergerScript=/usr/src/app/py/mergeSFM.py
 while test ${currentFrame} -le ${endFrame}; do
   echo ${currentFrame}
   addCameraMeta "${nasDataDir}" "${framesDir}" "${captureId}" "${currentFrame}"
@@ -50,5 +52,10 @@ while test ${currentFrame} -le ${endFrame}; do
     --featuresFolder=${featuresPath} \
     --describerTypes=${describerTypes} \
     --matchesFolder=${matchesPath}
+  combinedSfm = ${outputBaseDir}/combined.sfm
+  python3 ${mergerScript} --srcSfms ${combinedSfm} ${viewsAndPosesSfmPath} --tgtSfm ${combinedSfm} --numPoses ${numPoses}
+  if test $? -eq 0; then
+    break
+  fi
   currentFrame=$(expr ${currentFrame} + 1)
 done

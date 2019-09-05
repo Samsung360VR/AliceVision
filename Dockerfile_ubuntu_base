@@ -1,4 +1,4 @@
-ARG CUDA_TAG=9.2
+ARG CUDA_TAG=10.0
 ARG OS_TAG=18.04
 ARG NPROC=1
 FROM nvidia/cuda:${CUDA_TAG}-devel-ubuntu${OS_TAG}
