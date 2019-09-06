@@ -10,13 +10,13 @@ endFrame=300
 nasDataDir=/ext/input/nas-mount/data
 framesDir=/ext/input/frames
 outputBaseDir=/ext/output/alice/${captureId}
-sensorsDb=/opt/AliceVision_bundle/share/aliceVision/cameraSensors.db 
+sensorsDb=${AV_BUNDLE}/share/aliceVision/cameraSensors.db 
 currentFrame=${startFrame}
 cpuOnly=0
 numPoses=72
 describerTypes=sift,akaze
 describerTypes=sift
-mergerScript=/usr/src/app/py/mergeSFM.py
+mergerScript=${AV_DEV}/py/mergeSFM.py
 while test ${currentFrame} -le ${endFrame}; do
   echo ${currentFrame}
   addCameraMeta "${nasDataDir}" "${framesDir}" "${captureId}" "${currentFrame}"

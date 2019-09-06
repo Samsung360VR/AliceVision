@@ -12,9 +12,9 @@ addCameraMeta()
     camId=$(expr 1 + ${camId})
     echo "Processing ${camId} - ${serial}"
     exiftool \
-      -FocalLength="${FOCAL_LENGTH}" \
-      -Make="${MAKE}" \
-      -Model="${MODEL}" \
+      -FocalLength="${SVR_CAM_FOCAL_LENGTH}" \
+      -Make="${SVR_CAM_MAKE}" \
+      -Model="${SVR_CAM_MODEL}" \
       -CameraSerialNumber="${serial}" \
       -SerialNumber="${serial}" \
       -LensSerialNumber="${serial}" \
