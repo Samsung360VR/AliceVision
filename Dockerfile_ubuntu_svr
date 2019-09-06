@@ -7,9 +7,8 @@ COPY py /usr/src/app/py
 RUN chmod +x /usr/src/app/scripts/genPoseSFM.sh
 ENV LD_LIBRARY_PATH="/opt/AliceVision_install/lib:${LD_LIBRARY_PATH}"
 ENV PATH="/opt/AliceVision_install/bin:${PATH}"
-ENV MAKE="Fujinon"
-ENV MODEL="Fujinon 12.5mm 2/3inch C mount Lens"
-ENV FOCAL_LENGTH="12.5"
-ENV NUM_CAMS="72"
-RUN echo "${MAKE};${MODEL};${FOCAL_LENGTH}" >> /opt/AliceVision_bundle/share/aliceVision/cameraSensors.db
+ENV SVR_CAM_MAKE="Fujinon"
+ENV SVR_CAM_MODEL="Fujinon 12.5mm 2/3inch C mount Lens"
+ENV SVR_CAM_FOCAL_LENGTH="12.5"
+RUN echo "${SVR_CAM_MAKE};${SVR_CAM_MODEL};${SVR_CAM_FOCAL_LENGTH}" >> /opt/AliceVision_bundle/share/aliceVision/cameraSensors.db
 
