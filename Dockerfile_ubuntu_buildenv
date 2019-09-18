@@ -21,6 +21,10 @@ LABEL maintainer="AliceVision Team alicevision-team@googlegroups.com"
 
 # Install all compilation tools
 
+ENV SVR_CAM_MAKE="Fujinon"
+ENV SVR_CAM_MODEL="Fujinon 12.5mm 2/3inch C mount Lens"
+ENV SVR_CAM_FOCAL_LENGTH="12.5"
+
 RUN apt-get clean && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -35,6 +39,7 @@ RUN apt-get clean && \
         nasm \
         automake \
         gfortran \
+        exiftool python3 \
         librhash-dev zlib1g-dev libcurl4-openssl-dev \
         libexpat-dev libjsoncpp-dev libuv1-dev libzstd-dev libbz2-dev liblzma-dev \
         libarchive-dev \
