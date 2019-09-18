@@ -1,24 +1,32 @@
 addCameraMeta()
 {
-  camId=-1
   nasDataDir=${1}
   baseFramesDir=${2}
   captureId=${3}
   frameId=${4}
   imageType=jpeg
   imagesFolder=${baseFramesDir}/${captureId}/genUsable/usable/frame${frameId}
-  ordersFile=${nasDataDir}/${captureId}/order.txt
-  for serial in `cat ${ordersFile}`; do
-    camId=$(expr 1 + ${camId})
-    echo "Processing ${camId} - ${serial}"
+  camId=0
+
+  
+  while true; do
+    imageFile=${imagesFolder}/cam${camId}.${imageType}
+    if test ! -f ${imageFile}; then
+      echo "Done"
+      break
+    fi
+    camSerial=C${camId}
+    lensSerial=L${camId}
+    echo ${imageFile} ${camId} ${camSerial} ${lensSerial}
     exiftool \
       -FocalLength="${FOCAL_LENGTH}" \
-      -Make="${MAKE}" \
-      -Model="${MODEL}" \
-      -CameraSerialNumber="${serial}" \
-      -SerialNumber="${serial}" \
-      -LensSerialNumber="${serial}" \
+      -Make="${SVR_CAM_MAKE}" \
+      -Model="${SVR_CAM_MODEL}" \
+      -CameraSerialNumber="${camSerial}" \
+      -SerialNumber="${camSerial}" \
+      -LensSerialNumber="${lensSerial}" \
       -overwrite_original_in_place \
-      ${imagesFolder}/cam${camId}.${imageType}
+      ${imageFile}
+    camId=$(expr 1 + ${camId})
   done
 }

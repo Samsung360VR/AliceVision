@@ -1,0 +1,2 @@
+export LD_LIBRARY_PATH="${AV_INSTALL}/lib:${LD_LIBRARY_PATH}"
+export PATH="${AV_INSTALL}/bin:${PATH}"
