@@ -1,0 +1,50 @@
+ARG CUDA_TAG=9.2
+ARG OS_TAG=18.04
+ARG NPROC=4
+ARG BUILD_TYPE=Debug
+
+FROM nvidia/cuda:${CUDA_TAG}-devel-ubuntu${OS_TAG}
+LABEL maintainer="AliceVision Team alicevision-team@googlegroups.com"
+
+# use CUDA_TAG to select the image version to use
+# see https://hub.docker.com/r/nvidia/cuda/
+#
+# CUDA_TAG=8.0-devel
+# docker build --build-arg CUDA_TAG=$CUDA_TAG --tag alicevision:$CUDA_TAG .
+#
+# then execute with nvidia docker (https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0))
+# docker run -it --runtime=nvidia alicevision
+
+
+# OS/Version (FILE): cat /etc/issue.net
+# Cuda version (ENV): $CUDA_VERSION
+
+# Install all compilation tools
+
+RUN apt-get clean && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        vim \
+        git \
+        wget \
+        unzip \
+        yasm \
+        pkg-config \
+        libtool \
+        nasm \
+        automake \
+        gfortran \
+        librhash-dev zlib1g-dev libcurl4-openssl-dev \
+        libexpat-dev libjsoncpp-dev libuv1-dev libzstd-dev libbz2-dev liblzma-dev \
+        libarchive-dev \
+        liblapack-dev libsuitesparse-dev && \
+        cd /tmp && \
+        wget http://www.cmake.org/files/v3.15/cmake-3.15.2.tar.gz && \
+        gunzip cmake-3.15.2.tar.gz && \
+        tar xf cmake-3.15.2.tar && \
+        cd cmake-3.15.2 && \
+        ./bootstrap --system-libs --no-system-libarchive && \
+        make install && \
+        rm -rf /tmp/cmake* && \
+        rm -rf /var/lib/apt/lists/*
