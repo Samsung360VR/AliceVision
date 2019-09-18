@@ -12,7 +12,7 @@ sudo ${dockerBin} stop alicevision_buildenv
 sudo ${dockerBin} rm alicevision_buildenv
 sudo ${dockerBin} pull volumetric-nas.local:5005/alicevision_buildenv
 sudo ${dockerBin} run --name alicevision_buildenv -it --rm \
-  -v ${buildPath}:${AV_DEV} \
+  -v ${buildPath}:${AV_BUILD} \
   -v ${installPath}:${AV_INSTALL} \
   -v ${bundlePath}:${AV_BUNDLE} \
   -v ${basePath}:${AV_DEV} \
