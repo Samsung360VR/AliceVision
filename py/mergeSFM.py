@@ -1,4 +1,4 @@
-import os, argparse, json, sys
+import os, argparse, json, sys, copy
 
 def getValue(di, a, d):
   if (a in di):
@@ -7,10 +7,11 @@ def getValue(di, a, d):
 
 def map1(oTgtSfm, key, read):
   avail = getValue(oTgtSfm, key, dict())
-  for key2 in read:
+  for key2 in read.keys():
     if (key2 in avail):
       continue
-    avail[key2] = read[key2]
+    rk2 = read[key2]
+    avail[key2] = rk2
   oTgtSfm[key] = avail
   return oTgtSfm
 
@@ -28,15 +29,12 @@ def extract(oTgtSfm, srcSfm):
 
     myViews = dict()
     for view in oSrcSfm["views"]:
-      metadata = view["metadata"]
-      bodySerial = metadata["Exif:BodySerialNumber"]
-      lensSerial = metadata["Exif:LensSerialNumber"]
-      key = bodySerial + lensSerial
+      key = view["viewId"]
       myViews[key] = view
 
     myIntrinsics = dict()
     for intrinsic in oSrcSfm["intrinsics"]:
-      key = intrinsic["serialNumber"]
+      key = intrinsic["intrinsicId"]
       myIntrinsics[key] = intrinsic
 
     myPoses = dict()
@@ -53,7 +51,7 @@ def extract(oTgtSfm, srcSfm):
 def isComplete(oTgtSfm, numPoses):
   if (numPoses is None):
     numPoses = len(oTgtSfm["views"].values())
-  return numPoses == len(oTgtSfm["poses"].values())
+  return numPoses <= len(oTgtSfm["poses"].values())
 
 def save(tgtSfm, oTgtSfm):
   if (tgtSfm is None):
@@ -80,13 +78,13 @@ args = parser.parse_args()
 
 oTgtSfm = None
 try:
-  with open(tgtSfm, 'r') as fTgtSfm:
+  with open(args.tgtSfm, 'r') as fTgtSfm:
     oTgtSfm = json.load(fTgtSfm)
-except:
+except Exception as ex:
+  print(ex)
   oTgtSfm = None
 
 returnCode = 1  
-
 if (args.srcSfmList is not None):
   try:
     with open(args.srcSfmList, 'r') as fSfmList:
