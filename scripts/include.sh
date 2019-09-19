@@ -19,7 +19,7 @@ addCameraMeta()
     lensSerial=L${camId}
     echo ${imageFile} ${camId} ${camSerial} ${lensSerial}
     exiftool \
-      -FocalLength="${FOCAL_LENGTH}" \
+      -FocalLength="${SVR_CAM_FOCAL_LENGTH}" \
       -Make="${SVR_CAM_MAKE}" \
       -Model="${SVR_CAM_MODEL}" \
       -CameraSerialNumber="${camSerial}" \
