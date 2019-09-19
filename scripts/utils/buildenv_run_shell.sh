@@ -29,5 +29,6 @@ sudo ${dockerBin} run --name alicevision_buildenv -it --rm \
   -e AV_INSTALL=${AV_INSTALL} \
   -e AV_BUNDLE=${AV_BUNDLE} \
   -e CAPTURE_ID="${captureId}" \
+  -e NUM_CAMS=72 \
   volumetric-nas.local:5005/alicevision_buildenv:latest \
   "/bin/bash"

@@ -1,4 +1,4 @@
-import os, argparse, json
+import os, argparse, json, sys
 
 def getValue(di, a, d):
   if (a in di):
@@ -106,4 +106,5 @@ elif (args.srcSfms is not None):
 
 if oTgtSfm is not None:
   save(args.tgtSfm, oTgtSfm)
-return returnCode  
+
+sys.exit(returnCode)

@@ -1,4 +1,4 @@
-BUILD_TYPE=Debug
+BUILD_TYPE=Release
 NPROC=4
 cd ${AV_BUILD}
 pwd

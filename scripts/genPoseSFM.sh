@@ -5,7 +5,7 @@ scriptDir=$(dirname "$fullPath")
 
 . ${scriptDir}/include.sh
 captureId=${CAPTURE_ID}
-startFrame=1
+startFrame=2
 endFrame=300
 nasDataDir=/ext/input/nas-mount/data
 framesDir=/ext/input/frames
@@ -13,10 +13,11 @@ outputBaseDir=/ext/output/alice/${captureId}
 sensorsDb=${AV_BUNDLE}/share/aliceVision/cameraSensors.db 
 currentFrame=${startFrame}
 cpuOnly=0
-numPoses=72
+numPoses=${NUM_CAMS}
 describerTypes=sift,akaze
 describerTypes=sift
-mergerScript=/usr/src/app/py/mergeSFM.py
+mergerScript=${AV_DEV}/py/mergeSFM.py
+
 while test ${currentFrame} -le ${endFrame}; do
   echo ${currentFrame}
   addCameraMeta "${nasDataDir}" "${framesDir}" "${captureId}" "${currentFrame}"
@@ -52,8 +53,8 @@ while test ${currentFrame} -le ${endFrame}; do
     --featuresFolder=${featuresPath} \
     --describerTypes=${describerTypes} \
     --matchesFolder=${matchesPath}
-  combinedSfm = ${outputBaseDir}/combined.sfm
-  python3 ${mergerScript} --srcSfms ${combinedSfm} ${viewsAndPosesSfmPath} --tgtSfm ${combinedSfm} --numPoses ${numPoses}
+  combinedSfm=${outputBaseDir}/combined.sfm
+  python3 ${mergerScript} --srcSfms ${viewsAndPosesSfmPath} --tgtSfm ${combinedSfm} --numPoses ${numPoses}
   if test $? -eq 0; then
     break
   fi
