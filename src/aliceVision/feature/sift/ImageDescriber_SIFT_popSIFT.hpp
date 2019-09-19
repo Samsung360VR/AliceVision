@@ -32,6 +32,8 @@ public:
     , _isOriented(isOriented)
   {}
 
+  virtual ~ImageDescriber_SIFT_popSIFT();
+
   /**
    * @brief Check if the image describer use CUDA
    * @return True if the image describer use CUDA
@@ -112,6 +114,7 @@ public:
 private:
 
   void resetConfiguration();
+  void reset(std::unique_ptr<PopSift>::pointer);
 
   SiftParams _params;
   bool _isOriented = true;

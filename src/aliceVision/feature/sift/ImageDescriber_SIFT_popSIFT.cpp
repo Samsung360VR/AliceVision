@@ -19,10 +19,22 @@ namespace feature {
 
 std::unique_ptr<PopSift> ImageDescriber_SIFT_popSIFT::_popSift = nullptr;
 
+void ImageDescriber_SIFT_popSIFT::reset(std::unique_ptr<PopSift>::pointer popSift)
+{
+    if (nullptr != _popSift) {
+        _popSift->uninit();
+    }
+    _popSift.reset(popSift);
+}
+
 void ImageDescriber_SIFT_popSIFT::setConfigurationPreset(EImageDescriberPreset preset)
 {
     _params.setPreset(preset);
-    _popSift.reset(nullptr); // reset by describe method
+    reset(nullptr); // reset by describe method
+}
+
+ImageDescriber_SIFT_popSIFT::~ImageDescriber_SIFT_popSIFT() {
+    reset(nullptr);
 }
 
 bool ImageDescriber_SIFT_popSIFT::describe(const image::Image<float>& image,
@@ -92,7 +104,7 @@ void ImageDescriber_SIFT_popSIFT::resetConfiguration()
   config.setFilterMaxExtrema(_params._maxTotalKeypoints);
   config.setFilterSorting(popsift::Config::LargestScaleFirst);
 
-  _popSift.reset(new PopSift(config, popsift::Config::ExtractingMode, PopSift::FloatImages));
+  reset(new PopSift(config, popsift::Config::ExtractingMode, PopSift::FloatImages));
 }
 
 } // namespace feature
