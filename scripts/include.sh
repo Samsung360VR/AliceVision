@@ -30,3 +30,44 @@ addCameraMeta()
     camId=$(expr 1 + ${camId})
   done
 }
+
+
+
+addCameraMeta2()
+{
+  baseDir=${1}
+  echo ${baseDir}
+  imageType=jpeg
+  camPrefix=
+  dirId=0
+  while true; do
+    dirPath=${baseDir}/${dirId}
+    if test ! -d ${dirPath}; then
+      break
+    fi
+    echo ${dirPath}
+    camId=0
+    while true; do
+      camPath=${dirPath}/${camPrefix}${camId}.${imageType}
+      if test ! -f ${camPath}; then
+        break
+      fi
+      camSerial=C${camId}
+      lensSerial=L${camId}
+      imageId=I-${dirId}-${camId}
+      echo ${camPath} ${camSerial} ${lensSerial} ${imageId}
+      exiftool \
+        -FocalLength="${SVR_CAM_FOCAL_LENGTH}" \
+        -Make="${SVR_CAM_MAKE}" \
+        -Model="${SVR_CAM_MODEL}" \
+        -CameraSerialNumber="${camSerial}" \
+        -SerialNumber="${camSerial}" \
+        -LensSerialNumber="${lensSerial}" \
+	-ImageUniqueID="${imageId}" \
+        -overwrite_original_in_place \
+        ${camPath}
+      camId=$(expr 1 + ${camId})
+    done
+    dirId=$(expr 1 + ${dirId})
+  done
+}
