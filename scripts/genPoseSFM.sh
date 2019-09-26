@@ -5,8 +5,8 @@ scriptDir=$(dirname "$fullPath")
 
 . ${scriptDir}/include.sh
 captureId=${CAPTURE_ID}
-startFrame=2
-endFrame=300
+startFrame=1
+endFrame=1
 nasDataDir=/ext/input/nas-mount/data
 framesDir=/ext/input/frames
 outputBaseDir=/ext/output/alice/${captureId}
@@ -18,15 +18,17 @@ describerTypes=sift,akaze
 describerTypes=sift
 mergerScript=${AV_DEV}/py/mergeSFM.py
 
+frameInputDir=${framesDir}/${captureId}/genUsable/usable
+echo addCameraMeta2 "${frameInputDir}" 1 0
+frameDirPrefix=frame
 while test ${currentFrame} -le ${endFrame}; do
   echo ${currentFrame}
-  addCameraMeta "${nasDataDir}" "${framesDir}" "${captureId}" "${currentFrame}"
-  frameOutputDir=${outputBaseDir}/frame${currentFrame}
+  frameOutputDir=${outputBaseDir}/${frameDirPrefix}${currentFrame}
   mkdir -p ${frameOutputDir}
   initSfmPath=${frameOutputDir}/init.sfm
   incrementalSfmPath=${frameOutputDir}/incremental.sfm
   aliceVision_cameraInit \
-    --imageFolder ${framesDir}/${captureId}/genUsable/usable/frame${currentFrame} \
+    --imageFolder ${frameInputDir}/${frameDirPrefix}${currentFrame} \
     --output=${initSfmPath} \
     --sensorDatabase=${sensorsDb}
   featuresPath=${frameOutputDir}/features
@@ -35,8 +37,8 @@ while test ${currentFrame} -le ${endFrame}; do
     --input=${initSfmPath} \
     --output=${featuresPath} \
     --forceCpuExtraction=${cpuOnly} \
-    --describerTypes=${describerTypes}
-#    --describerPreset=high
+    --describerTypes=${describerTypes} \
+    --describerPreset=high
   matchesPath=${frameOutputDir}/matches
   mkdir -p ${matchesPath}
   aliceVision_featureMatching \
@@ -53,10 +55,5 @@ while test ${currentFrame} -le ${endFrame}; do
     --featuresFolder=${featuresPath} \
     --describerTypes=${describerTypes} \
     --matchesFolder=${matchesPath}
-  combinedSfm=${outputBaseDir}/combined.sfm
-  python3 ${mergerScript} --srcSfms ${viewsAndPosesSfmPath} --tgtSfm ${combinedSfm} --numPoses ${numPoses}
-  if test $? -eq 0; then
-    break
-  fi
   currentFrame=$(expr ${currentFrame} + 1)
 done

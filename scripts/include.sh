@@ -36,17 +36,19 @@ addCameraMeta()
 addCameraMeta2()
 {
   baseDir=${1}
-  echo ${baseDir}
+  startDirId=${2}
+  startCamId=${3}
   imageType=jpeg
-  camPrefix=
-  dirId=0
+  camPrefix=cam
+  dirPrefix=frame
+  dirId=${startDirId}
   while true; do
-    dirPath=${baseDir}/${dirId}
+    dirPath=${baseDir}/${dirPrefix}${dirId}
     if test ! -d ${dirPath}; then
       break
     fi
     echo ${dirPath}
-    camId=0
+    camId=${startCamId}
     while true; do
       camPath=${dirPath}/${camPrefix}${camId}.${imageType}
       if test ! -f ${camPath}; then
