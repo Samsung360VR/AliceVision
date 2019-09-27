@@ -46,5 +46,26 @@ while test ${currentFrame} -le ${endFrame}; do
     --input=${sfmPath} \
     --depthMapsFolder ${estimateDepthOutputDir} \
     --output=${filterDepthOutputDir}
+  objFile=${frameOutputDir}/result.obj
+  denseSfm=${frameOutputDir}/dense.sfm
+  echo aliceVision_meshing \
+    --input=${sfmPath} \
+    --output=${denseSfm} \
+    --outputMesh=${objFile} \
+    --depthMapsFolder ${estimateDepthOutputDir} \
+    --depthMapsFilterFolder=${filterDepthOutputDir}
+  objOutputDir=${frameOutputDir}/objOutput
+  echo aliceVision_texturing \
+    --input=${denseSfm} \
+    --textureSide=16384 \
+    --correctEV=1 \
+    --output=${objOutputDir} \
+    --inputMesh=${objFile} \
+    --fillHoles=1
+  plyOutputDir=${frameOutputDir}/plyOutput
+  echo aliceVision_exportMeshlab \
+    --input=${denseSfm} \
+    --ply=${plyOutputDir}/texturedPly.ply \
+    --output=${plyOutputDir}
   currentFrame=$(expr ${currentFrame} + 1)
 done
