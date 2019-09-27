@@ -35,6 +35,7 @@ addCameraMeta()
 setupEnv()
 {
   export calibrationBaseDir=/ext/output/aliceCalibration
+  export stitchBaseDir=/ext/output/aliceStitch
   export sensorsDb=${AV_BUNDLE}/share/aliceVision/cameraSensors.db
   export describerTypes=sift,akaze
   export describerTypes=sift
