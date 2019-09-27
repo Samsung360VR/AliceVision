@@ -32,6 +32,22 @@ addCameraMeta()
 }
 
 
+setupEnv()
+{
+  export calibrationBaseDir=/ext/output/aliceCalibration
+  export sensorsDb=${AV_BUNDLE}/share/aliceVision/cameraSensors.db
+  export describerTypes=sift,akaze
+  export describerTypes=sift
+  export numPoses=${NUM_CAMS}
+  export verboseLevel=info
+}
+
+runCmd()
+{
+  cmd=${1}
+  echo ${cmd}
+  ${cmd}
+}  
 
 addCameraMeta2()
 {
