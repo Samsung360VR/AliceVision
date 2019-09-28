@@ -6,7 +6,7 @@ scriptDir=$(dirname "$fullPath")
 . ${scriptDir}/include.sh
 setupEnv
 
-captureId=${CAPTURE_ID}
+captureId=${CALIBRATION_CAPTURE_ID}
 startFrame=1
 endFrame=1
 framesDir=/ext/input/frames
@@ -47,18 +47,20 @@ while test ${currentFrame} -le ${endFrame}; do
     --matchFilePerImage=1 \
     --verboseLevel=${verboseLevel}"
   incrementalSfmPath=${frameOutputDir}/incremental.sfm
+  viewPosesSfmPath=${frameOutputDir}/viewAndPoses.sfm
   runCmd "aliceVision_incrementalSfM \
     --input=${initSfmPath} \
     --output=${incrementalSfmPath} \
     --featuresFolder=${featuresPath} \
     --describerTypes=${describerTypes} \
     --matchesFolder=${matchesPath} \
+    --outputViewsAndPoses=${viewPosesSfmPath} \
     --verboseLevel=${verboseLevel}"
   globalSfmPath=${frameOutputDir}/globalSfm
-  runCmd "aliceVision_globalSfM \
+  echo runCmd "aliceVision_globalSfM \
     --input=${initSfmPath} \
     --output=${globalSfmPath} \
-    --outSfMDataFilename=global.sfm \
+    --outSfMDataFilename=${globalSfmPath}/global.sfm \
     --featuresFolder=${featuresPath} \
     --describerTypes=${describerTypes} \
     --matchesFolder=${matchesPath} \

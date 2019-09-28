@@ -38,8 +38,9 @@ setupEnv()
   export stitchBaseDir=/ext/output/aliceStitch
   export sensorsDb=${AV_BUNDLE}/share/aliceVision/cameraSensors.db
   export describerTypes=sift,akaze
-  export describerTypes=sift
+  #export describerTypes=sift
   export numPoses=${NUM_CAMS}
+  export correctEV=0
   export verboseLevel=info
 }
 
@@ -47,7 +48,7 @@ runCmd()
 {
   cmd=${1}
   echo ${cmd}
-  ${cmd}
+  #${cmd}
 }  
 
 addCameraMeta2()

@@ -6,8 +6,11 @@ scriptDir=$(dirname "$fullPath")
 . ${scriptDir}/include.sh
 setupEnv
 
-stitchCaptureId=${CAPTURE_ID}
-calibrationCaptureId=${CAPTURE_ID}
+stitchCaptureId=${STITCH_CAPTURE_ID}
+calibrationCaptureId=${CALIBRATION_CAPTURE_ID}
+if test -z ${calibrationCaptureId}; then
+  calibrationCaptureId=${stitchCaptureId}
+fi
 startFrame=1
 endFrame=1
 framesDir=/ext/input/frames
@@ -21,14 +24,15 @@ frameDirPrefix=frame
 while test ${currentFrame} -le ${endFrame}; do
   echo ${currentFrame}
   frameOutputDir=${outputBaseDir}/${frameDirPrefix}${currentFrame}
+  srcImagesFolder=${frameInputDir}/${frameDirPrefix}${currentFrame}
   prepareDenseOutputDir=${frameOutputDir}/prepareDense
   mkdir -p ${prepareDenseOutputDir}
   sfmPath=${sfmBaseDir}/incremental.sfm
   runCmd "aliceVision_prepareDenseScene \
-    --imagesFolders ${frameInputDir}/${frameDirPrefix}${currentFrame} \
+    --imagesFolders ${srcImagesFolder} \
     --input=${sfmPath} \
     --outputFileType=png \
-    --evCorrection=1 \
+    --evCorrection=${correctEV} \
     --output=${prepareDenseOutputDir} \
     --verboseLevel=${verboseLevel}"
   estimateDepthOutputDir=${frameOutputDir}/estDepth
@@ -64,11 +68,12 @@ while test ${currentFrame} -le ${endFrame}; do
   objOutputDir=${frameOutputDir}/objOutput
   runCmd "aliceVision_texturing \
     --input=${denseSfm} \
+    --imagesFolder=${prepareDenseOutputDir} \
     --textureSide=16384 \
-    --correctEV=1 \
+    --correctEV=${correctEV} \
     --output=${objOutputDir} \
     --inputMesh=${filteredMeshFile} \
-    --fillHoles=1 \
-    --verboseLevel=${verboseLevel}"
+    --fillHoles=0 \
+    --verboseLevel=${verboseLevel}" 1
   currentFrame=$(expr ${currentFrame} + 1)
 done
