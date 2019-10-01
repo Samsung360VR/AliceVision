@@ -37,8 +37,9 @@ setupEnv()
   export calibrationBaseDir=/ext/output/aliceCalibration
   export stitchBaseDir=/ext/output/aliceStitch
   export sensorsDb=${AV_BUNDLE}/share/aliceVision/cameraSensors.db
-  export describerTypes=sift,akaze
-  #export describerTypes=sift
+  #export describerTypes=sift,akaze
+  export describerTypes=sift
+  export cameraModel=pinhole
   export numPoses=${NUM_CAMS}
   export correctEV=0
   export verboseLevel=info
@@ -48,7 +49,9 @@ runCmd()
 {
   cmd=${1}
   echo ${cmd}
-  #${cmd}
+  if test -z ${DRY_RUN}; then
+    ${cmd}
+  fi
 }  
 
 addCameraMeta2()
@@ -66,28 +69,47 @@ addCameraMeta2()
       break
     fi
     echo ${dirPath}
-    camId=${startCamId}
-    while true; do
-      camPath=${dirPath}/${camPrefix}${camId}.${imageType}
-      if test ! -f ${camPath}; then
-        break
+    cmdBase="exiftool \
+        -FocalLength=\"${SVR_CAM_FOCAL_LENGTH}\" \
+        -Make=\"${SVR_CAM_MAKE}\" \
+        -Model=\"${SVR_CAM_MODEL}\" \
+        -overwrite_original_in_place"
+    cmdFile=${dirPath}/cmd.txt
+    processed=0
+    if test -f ${cmdFile}; then
+      contents=$(cat ${cmdFile})
+      a=$(echo ${contents} | sed -e "s/\"//g")
+      b=$(echo ${cmdBase} | sed -e "s/\"//g")
+      if test "${a}" = "${b}"; then
+        echo "PROCESSED"
+        processed=1
+      else
+        rm -f ${cmdFile}
       fi
-      camSerial=C${camId}
-      lensSerial=L${camId}
-      imageId=I-${dirId}-${camId}
-      echo ${camPath} ${camSerial} ${lensSerial} ${imageId}
-      exiftool \
-        -FocalLength="${SVR_CAM_FOCAL_LENGTH}" \
-        -Make="${SVR_CAM_MAKE}" \
-        -Model="${SVR_CAM_MODEL}" \
-        -CameraSerialNumber="${camSerial}" \
-        -SerialNumber="${camSerial}" \
-        -LensSerialNumber="${lensSerial}" \
-	-ImageUniqueID="${imageId}" \
-        -overwrite_original_in_place \
-        ${camPath}
-      camId=$(expr 1 + ${camId})
-    done
+    fi
+    if test ${processed} -eq 0; then
+      camId=${startCamId}
+      while true; do
+        camPath=${dirPath}/${camPrefix}${camId}.${imageType}
+        if test ! -f ${camPath}; then
+          break
+        fi
+        camSerial=C${camId}
+        lensSerial=L${camId}
+        imageId=I-${dirId}-${camId}
+        echo ${camPath} ${camSerial} ${lensSerial} ${imageId}
+	fullCmd="${cmdBase} \
+          -CameraSerialNumber=\"${camSerial}\" \
+          -SerialNumber=\"${camSerial}\" \
+          -LensSerialNumber=\"${lensSerial}\" \
+	  -ImageUniqueID=\"${imageId}\" \
+          ${camPath}"
+	echo ${fullCmd}
+	eval ${fullCmd}
+        camId=$(expr 1 + ${camId})
+      done
+      echo ${cmdBase} > ${cmdFile}
+    fi
     dirId=$(expr 1 + ${dirId})
   done
 }

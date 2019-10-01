@@ -14,60 +14,108 @@ fi
 startFrame=1
 endFrame=1
 framesDir=/ext/input/frames
-outputBaseDir=${stitchBaseDir}/${stitchCaptureId}
-sfmBaseDir=${calibrationBaseDir}/${calibrationCaptureId}/frame1
 currentFrame=${startFrame}
-
+calibrationDir=${calibrationBaseDir}/${calibrationCaptureId}/frame1
+outputBaseDir=${stitchBaseDir}/${stitchCaptureId}
 frameInputDir=${framesDir}/${stitchCaptureId}/genUsable/usable
+
 addCameraMeta2 "${frameInputDir}" 1 0
 frameDirPrefix=frame
 cpuOnly=0
 while test ${currentFrame} -le ${endFrame}; do
   echo ${currentFrame}
   frameOutputDir=${outputBaseDir}/${frameDirPrefix}${currentFrame}
-  srcImagesFolder=${frameInputDir}/${frameDirPrefix}${currentFrame}
-  sfmPath=${sfmBaseDir}/incremental.sfm
+
+  mkdir -p ${frameOutputDir}
+
+  cameraSfmPath=${frameOutputDir}/camera.sfm
+  runCmd "aliceVision_cameraInit \
+    --defaultCameraModel=${cameraModel} \
+    --imageFolder ${frameInputDir}/${frameDirPrefix}${currentFrame} \
+    --output=${cameraSfmPath} \
+    --sensorDatabase=${sensorsDb} \
+    --verboseLevel=${verboseLevel}"
+
+  featuresPath=${frameOutputDir}/features
+  mkdir -p ${featuresPath}
+  runCmd "aliceVision_featureExtraction \
+    --input=${cameraSfmPath} \
+    --output=${featuresPath} \
+    --forceCpuExtraction=${cpuOnly} \
+    --describerTypes=${describerTypes} \
+    --describerPreset=high \
+    --verboseLevel=${verboseLevel}"
+
+  imagePairsFile=${calibrationDir}/pairs.txt
+  matchesPath=${frameOutputDir}/matches
+  mkdir -p ${matchesPath}
+  runCmd "aliceVision_featureMatching \
+    --input=${cameraSfmPath} \
+    --output=${matchesPath} \
+    --featuresFolder=${featuresPath} \
+    --describerTypes=${describerTypes} \
+    --matchFilePerImage=1 \
+    --imagePairsList=${imagePairsFile} \
+    --verboseLevel=${verboseLevel}"
+
+  calibrationSfmPath=${calibrationDir}/viewAndPoses.sfm
+  stitchSfmPath=${frameOutputDir}/stitch.sfm 
+
+  runCmd "aliceVision_computeStructureFromKnownPoses \
+    --input=${calibrationSfmPath} \
+    --output=${stitchSfmPath} \
+    --featuresFolder=${featuresPath} \
+    --matchesFolder=${matchesPath} \
+    --describerTypes=${describerTypes} \
+    --verboseLevel=${verboseLevel}"
 
   prepareDenseOutputDir=${frameOutputDir}/prepareDense
+  srcImagesFolder=${frameInputDir}/${frameDirPrefix}${currentFrame}
+
   mkdir -p ${prepareDenseOutputDir}
   #sfmPath=${sfmBaseDir}/viewAndPoses.sfm
   runCmd "aliceVision_prepareDenseScene \
     --imagesFolders ${srcImagesFolder} \
-    --input=${sfmPath} \
+    --input=${stitchSfmPath} \
     --outputFileType=jpg \
     --evCorrection=${correctEV} \
     --output=${prepareDenseOutputDir} \
     --verboseLevel=${verboseLevel}"
+
   estimateDepthOutputDir=${frameOutputDir}/estDepth
   mkdir -p ${estimateDepthOutputDir}
   runCmd "aliceVision_depthMapEstimation \
-    --input=${sfmPath} \
+    --input=${stitchSfmPath} \
     --imagesFolder ${prepareDenseOutputDir} \
     --output=${estimateDepthOutputDir} \
     --downscale=1 \
     --verboseLevel=${verboseLevel}"
+
   filterDepthOutputDir=${frameOutputDir}/filterDepth
   mkdir -p ${filterDepthOutputDir}
   runCmd "aliceVision_depthMapFiltering \
-    --input=${sfmPath} \
+    --input=${stitchSfmPath} \
     --depthMapsFolder ${estimateDepthOutputDir} \
     --output=${filterDepthOutputDir} \
     --verboseLevel=${verboseLevel}"
+
   meshFile=${frameOutputDir}/mesh.obj
   denseSfm=${frameOutputDir}/dense.sfm
   runCmd "aliceVision_meshing \
-    --input=${sfmPath} \
+    --input=${stitchSfmPath} \
     --output=${denseSfm} \
     --outputMesh=${meshFile} \
     --depthMapsFolder ${estimateDepthOutputDir} \
     --depthMapsFilterFolder=${filterDepthOutputDir} \
     --colorizeOutput=1 \
     --verboseLevel=${verboseLevel}"
+
   filteredMeshFile=${frameOutputDir}/filteredMesh.obj
   runCmd "aliceVision_meshFiltering \
     --inputMesh=${meshFile} \
     --outputMesh=${filteredMeshFile} \
     --verboseLevel=${verboseLevel}"
+
   objOutputDir=${frameOutputDir}/objOutput
   runCmd "aliceVision_texturing \
     --input=${denseSfm} \
@@ -77,6 +125,7 @@ while test ${currentFrame} -le ${endFrame}; do
     --output=${objOutputDir} \
     --inputMesh=${filteredMeshFile} \
     --fillHoles=0 \
-    --verboseLevel=${verboseLevel}" 1
+    --verboseLevel=${verboseLevel}"
+
   currentFrame=$(expr ${currentFrame} + 1)
 done

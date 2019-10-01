@@ -23,6 +23,7 @@ while test ${currentFrame} -le ${endFrame}; do
   mkdir -p ${frameOutputDir}
   initSfmPath=${frameOutputDir}/init.sfm
   runCmd "aliceVision_cameraInit \
+    --defaultCameraModel=radial1 \
     --imageFolder ${frameInputDir}/${frameDirPrefix}${currentFrame} \
     --output=${initSfmPath} \
     --sensorDatabase=${sensorsDb} \
@@ -36,6 +37,20 @@ while test ${currentFrame} -le ${endFrame}; do
     --describerTypes=${describerTypes} \
     --describerPreset=high \
     --verboseLevel=${verboseLevel}"
+  echo runCmd "aliceVision_utils_voctreeCreation \
+    --input=${initSfmPath} \
+    --weights=${frameOutputDir}/weights.txt \
+    --featuresFolders=${featuresPath} \
+    --tree=${frameOutputDir}/voc.tree \
+    --verboseLevel=trace"
+  imagePairsFile=${frameOutputDir}/pairs.txt
+  runCmd "aliceVision_imageMatching \
+    --input=${initSfmPath} \
+    --featuresFolders=${featuresPath} \
+    --tree=${AV_BUNDLE}/share/aliceVision/vlfeat_K80L3.SIFT.tree \
+    --nbMatches=0 \
+    --maxDescriptors=0 \
+    --output=${imagePairsFile}"
   matchesPath=${frameOutputDir}/matches
   mkdir -p ${matchesPath}
   runCmd "aliceVision_featureMatching \
@@ -45,6 +60,7 @@ while test ${currentFrame} -le ${endFrame}; do
     --describerTypes=${describerTypes} \
     --guidedMatching=1 \
     --matchFilePerImage=1 \
+    --imagePairsList=${imagePairsFile} \
     --verboseLevel=${verboseLevel}"
   incrementalSfmPath=${frameOutputDir}/incremental.sfm
   viewPosesSfmPath=${frameOutputDir}/viewAndPoses.sfm
