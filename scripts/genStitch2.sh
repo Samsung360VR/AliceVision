@@ -120,7 +120,6 @@ while test ${currentFrame} -le ${endFrame}; do
   runCmd "aliceVision_texturing \
     --input=${denseSfm} \
     --imagesFolder=${prepareDenseOutputDir} \
-    --textureSide=16384 \
     --correctEV=${correctEV} \
     --output=${objOutputDir} \
     --inputMesh=${filteredMeshFile} \

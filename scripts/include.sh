@@ -113,3 +113,30 @@ addCameraMeta2()
     dirId=$(expr 1 + ${dirId})
   done
 }
+
+
+addCameraMeta3()
+{
+  baseDir=${1}
+  dirId=$(basename ${baseDir})
+  for i in `ls ${baseDir}`; do
+    cmdBase="exiftool \
+        -FocalLength=\"${SVR_CAM_FOCAL_LENGTH}\" \
+        -Make=\"${SVR_CAM_MAKE}\" \
+        -Model=\"${SVR_CAM_MODEL}\" \
+        -overwrite_original_in_place"
+    camPath=${baseDir}/${i}
+    camId=$(echo ${i} | tr -d '.')
+    camSerial=C_${camId}
+    lensSerial=L_${camId}
+    imageId=I-${dirId}-${camId}
+    fullCmd="${cmdBase} \
+      -CameraSerialNumber=\"${camSerial}\" \
+      -SerialNumber=\"${camSerial}\" \
+      -LensSerialNumber=\"${lensSerial}\" \
+      -ImageUniqueID=\"${imageId}\" \
+      ${camPath}"
+    echo ${fullCmd}
+    eval ${fullCmd}
+  done
+}
