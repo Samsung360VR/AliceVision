@@ -53,56 +53,69 @@ def isComplete(oTgtSfm, numPoses):
     numPoses = len(oTgtSfm["views"].values())
   return numPoses <= len(oTgtSfm["poses"].values())
 
+def load(sfmFile):
+  if (sfmFile is None):
+    return None
+  try:
+    with open(sfmFile, 'r') as fSfm:
+      return json.load(fSfm)
+  except Exception as ex:
+    print(ex) 
+  return None
+
 def save(tgtSfm, oTgtSfm):
   if (tgtSfm is None):
     tgtSfm = "/dev/tty"
-    
-  result = dict()
-  result["version"] = ["1", "0", "0"]
-  result["featuresFolders"] = ["features"]
-  result["matchesFolders"] = ["matches"]
-  result["views"] = list(oTgtSfm["views"].values())
-  result["intrinsics"] = list(oTgtSfm["intrinsics"].values())
-  result["poses"] = list(oTgtSfm["poses"].values())
 
   with open(tgtSfm, "w") as fTgtSfm:
-    json.dump(result, fTgtSfm, indent=2)
+    json.dump(oTgtSfm, fTgtSfm, indent=2)
+
+def getKeyForCamLens(metadata):
+  camSerial = metadata["Exif:BodySerialNumber"]
+  lensSerial = metadata["Exif:LensSerialNumber"]
+  return camSerial + "_" + lensSerial
 
 parser = argparse.ArgumentParser(description="Merge intrinsics, poses and views in AliceVision SFM")
 
-parser.add_argument('--srcSfms', type=str, nargs='+', help="One or more source SFMs")
-parser.add_argument('--srcSfmList', type=str, help="Text file containing paths to SFM files")
+parser.add_argument('--posesSfm', type=str, help="SFM with poses")
+parser.add_argument('--viewsSfm', type=str, help="SFM with views")
 parser.add_argument("--tgtSfm", type=str, help="Target SFM file")
-parser.add_argument("--numPoses", type=int, help="Expected number of poses in SFM")
 args = parser.parse_args()
 
-oTgtSfm = None
-try:
-  with open(args.tgtSfm, 'r') as fTgtSfm:
-    oTgtSfm = json.load(fTgtSfm)
-except Exception as ex:
-  print(ex)
-  oTgtSfm = None
+posesSfm = load(args.posesSfm)
+if (posesSfm is None):
+  sys.exit(1)
+posesMap = dict()
+posesSfmPoses = posesSfm["poses"]
+for posesSfmPose in posesSfmPoses:
+  poseId = posesSfmPose["poseId"]
+  posesMap[poseId] = posesSfmPose
+posesSfmViews = posesSfm["views"]
+posesBridge = dict()
+for posesSfmView in posesSfmViews:
+  poseId = posesSfmView["poseId"]
+  if (poseId not in posesMap):
+    print("PoseId " + poseId + " not found !")
+  else:
+    pose = posesMap[poseId]
+    metadata = posesSfmView["metadata"]
+    key = getKeyForCamLens(metadata)
+    posesBridge[key] = pose
 
-returnCode = 1  
-if (args.srcSfmList is not None):
-  try:
-    with open(args.srcSfmList, 'r') as fSfmList:
-      for line in fSfmList:
-        oTgtSfm = extract(oTgtSfm, line.strip())
-        if (isComplete(oTgtSfm, args.numPoses)):
-          returnCode = 0
-          break;
-  except:
-      pass
-elif (args.srcSfms is not None):
-  for srcSfm in args.srcSfms:
-    oTgtSfm = extract(oTgtSfm, srcSfm)
-    if (isComplete(oTgtSfm, args.numPoses)):
-      returnCode = 0
-      break;
+viewsSfm = load(args.viewsSfm)
+if (viewsSfm is None):
+  sys.exit(1)
 
-if oTgtSfm is not None:
-  save(args.tgtSfm, oTgtSfm)
+viewsSfm["poses"] = list(posesBridge.values())
+viewSfmViews = viewsSfm["views"]  
+for viewSfmView in viewSfmViews:
+  metadata = viewSfmView["metadata"]
+  key = getKeyForCamLens(metadata)
+  if (key not in posesBridge):
+    print("Key " + key + " not found in poses")
+    sys.exit(1)
+  pose = posesBridge[key]
+  viewSfmView["poseId"] = pose["poseId"]
 
-sys.exit(returnCode)
+save(args.tgtSfm, viewsSfm)
+sys.exit(0)
